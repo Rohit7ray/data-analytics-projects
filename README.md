@@ -10,7 +10,7 @@ Analysis of census dataset using Python for data cleaning, exploration, and insi
 Tools used:
 - Python
 - Pandas
-- Jupyter Notebook
+- Google colab
 
 Project Folder:
 Census/
