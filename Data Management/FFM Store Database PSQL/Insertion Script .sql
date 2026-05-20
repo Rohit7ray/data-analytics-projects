@@ -1,3 +1,6 @@
+\connect "FFM Store"
+
+
 --1.Creating And Inserting data in Store table
 CREATE TABLE Store (
     Store_ID INTEGER PRIMARY KEY,
@@ -9,12 +12,15 @@ CREATE TABLE Store (
     head_office BOOLEAN DEFAULT FALSE
 )
 
+
 INSERT INTO Store  (Store_ID, Name, Operating_Hours, Manager_ID, Locations, Phone_Number, Head_Office) VALUES (1, 'Portsmouth Branch', '9AM-8PM', 1, 'Portsmouth', '+44151 496 0277', TRUE);
 INSERT INTO Store  (Store_ID, Name, Operating_Hours, Manager_ID, Locations, Phone_Number) VALUES (2, 'Waterlooville Branch', '9AM-8PM', 7, 'Waterlooville', '+44131 496 0167');
 INSERT INTO Store  (Store_ID, Name, Operating_Hours, Manager_ID, Locations, Phone_Number) VALUES (3, 'Fareham Branch', '9AM-8PM', 12, 'Fareham', '(0161) 4960969');
 INSERT INTO Store  (Store_ID, Name, Operating_Hours, Manager_ID, Locations, Phone_Number) VALUES (4, 'Gosport Branch', '9AM-8PM', 18, 'Gosport', '+441164960177');
 INSERT INTO Store  (Store_ID, Name, Operating_Hours, Manager_ID, Locations, Phone_Number) VALUES (5, 'Havant Branch', '9AM-8PM', 24, 'Havant', '01134960840');
 INSERT INTO Store  (Store_ID, Name, Operating_Hours, Manager_ID, Locations, Phone_Number) VALUES (6, 'Chichester Branch', '9AM-8PM', 30, 'Chichester', '0141 496 0551');
+
+select * from Store
 
 --2.Creating And Inserting data in Staff table
 CREATE TABLE Staff (
@@ -68,13 +74,16 @@ VALUES
 ,( 'Raymond Glover', 'Assistant Manager', '7 AM - 3 PM', 0.01, 6, FALSE, '929 Anthony mountains, East Gavinton, WS4 2UY', '(0117) 496 0358')
 ,( 'Dr Donna Hunt', 'Customer Service Representative', '8 AM - 4 PM', 0.03, 6, FALSE, 'Flat 02, Turner burg, Ashleybury, N88 9YD', '(0121)4960641')
 
+--Select * from Staff
+
 --3.Creating And Inserting data in Supplier table
 CREATE TABLE Supplier (
     Supplier_ID SERIAL PRIMARY KEY,
     Name VARCHAR(255) NOT NULL,
-    Contact_Info NVARCHAR(20) NOT NULL UNIQUE,
+    Contact_Info VARCHAR(20) NOT NULL UNIQUE,
     Address VARCHAR(255) NOT NULL
 );
+
 
 INSERT INTO Supplier (Name, Contact_info, Address) VALUES ('Urban Threads Inc.', '+441154960919', '2 Denise lake, North Cameronmouth, M4 4QE');
 INSERT INTO Supplier (Name, Contact_info, Address) VALUES ('Elegant Stitchers Ltd.', '+44(0)191 4960833', '39 Sheila rue, North Lewis, PR4 1SN');
@@ -86,6 +95,8 @@ INSERT INTO Supplier (Name, Contact_info, Address) VALUES ('The Fabric Boutique'
 INSERT INTO Supplier (Name, Contact_info, Address) VALUES ('EcoWear Distributors', '0191 498 0449', 'Studio 1, Bibi loop, Woodsside, E13 8ZL');
 INSERT INTO Supplier (Name, Contact_info, Address) VALUES ('Global Garment Group', '0151 496 0572', 'Studio 02, Newton walk, Simpsonborough, L83 7RH');
 INSERT INTO Supplier (Name, Contact_info, Address) VALUES ('Style Essentials Ltd.', '+44(0)141 496 0782', '0 Murray point, Dickinsonview, S09 3ZT');
+
+select * from Supplier
 
 --4.Creating And Inserting data in Purchase_order table
 
@@ -440,6 +451,7 @@ VALUES (1.77, 57, 'Breathable sports tee with a relaxed fit, made from quick-dry
 ( 41.24, 5, 'Long-sleeve cardigan with an open front, ideal for layering over light tops.', '2024-05-28', '2024-07-30', 10, 6, 'XL', 21),
 ( 53.21, 12, 'Classic crewneck pullover with a relaxed fit and soft finish.', '2024-02-15', '2024-09-29', 10, 6, 'XL', 22)
 
+--Select * from Purchase_order
 
 --5.Creating And Inserting data in Category table
 CREATE TABLE Category (
@@ -452,6 +464,8 @@ INSERT INTO Category (Category_ID, Name, Gender) VALUES (1, 'Women', 'Female');
 INSERT INTO Category (Category_ID, Name, Gender) VALUES (2, 'Men', 'Male');
 INSERT INTO Category (Category_ID, Name, Gender) VALUES (3, 'Baby', 'Unisex');
 INSERT INTO Category (Category_ID, Name, Gender) VALUES (4, 'Home Product', 'Unisex');
+
+--Select * from Category
 
 --6.Creating And Inserting data in Product table
 --RUN THIS 1
@@ -569,6 +583,7 @@ UPDATE Product
 SET Product_NO = FLOOR(RANDOM() * 1000000000 * Product_ID);
 
 
+
 --RUN THIS 5
 update Product 
 set composition = 'Acrylic 30%, Polyester 28%, Wool 42%'
@@ -586,6 +601,8 @@ update Product
 set composition = 'Acrylic 23%, Polyester 17%, Wool 20%, Cotton 40%'
 where Category_ID = 4
 
+--select * from Product
+
 --7.Creating And Inserting data in Inventory table
 CREATE TABLE Inventory (
     Inventory_ID SERIAL PRIMARY KEY ,
@@ -598,6 +615,8 @@ CREATE TABLE Inventory (
 
 INSERT INTO Inventory (Store_ID, Product_ID, Quantity)
 SELECT Store_ID, Product_ID, sum(Quantity) from Purchase_order group by Store_ID, Product_ID;
+
+--select * from Inventory
 
 --8.Creating And Inserting data in CUSTOMER table
 CREATE TABLE Customer (
@@ -701,6 +720,7 @@ INSERT INTO CUSTOMER ( Name, Email, Password, Address, Phone_Number, Account_Cre
 INSERT INTO CUSTOMER ( Name, Email, Password, Address, Phone_Number, Account_Creation_Date) VALUES ( 'Heather Walsh-Williams', 'HeatherWalsh-Williams@gmail.com', '_4)9qIdBH!', 'Flat 17, George hills, Alisonburgh, L8 8HB', '+44141 4960442', '2022-09-13');
 INSERT INTO CUSTOMER ( Name, Email, Password, Address, Phone_Number, Account_Creation_Date) VALUES ( 'Miss Claire Phillips', 'MissClairePhillips@gmail.com', 'd&F0E)B3^s', '45 Leigh via, Richardsland, WS8Y 6LJ', '+44(0)909 879 0347', '2023-11-26');
 
+--select * from CUSTOMER
 
 --9.Creating And Inserting data in Orders table
 
@@ -786,6 +806,7 @@ INSERT INTO Orders ( Product_ID, Quantity, Customer_ID) VALUES ( 38, 3, 62);
 INSERT INTO Orders ( Product_ID, Quantity, Customer_ID) VALUES ( 30, 1, 67);
 INSERT INTO Orders ( Product_ID, Quantity, Customer_ID) VALUES ( 56, 3, 9);
 
+--select * from Orders
 
 --10.Creating And Inserting data in Inventory table
 CREATE TABLE Instore 
@@ -800,9 +821,6 @@ FOREIGN KEY (Staff_ID) REFERENCES Staff(Staff_ID),
 FOREIGN KEY (Store_ID) REFERENCES Store(Store_ID)
 );
 
-
-
-select * from Instore order by Order_ID
 
 INSERT INTO Instore ( Order_ID, Staff_ID, Store_ID, Transaction_Date) VALUES (69, 2, 1, '2024-08-22');
 INSERT INTO Instore ( Order_ID, Staff_ID, Store_ID, Transaction_Date) VALUES (58, 20, 4, '2024-08-22');
@@ -863,6 +881,7 @@ INSERT INTO Instore ( Order_ID, Staff_ID, Store_ID, Transaction_Date) VALUES ( 6
 INSERT INTO Instore ( Order_ID, Staff_ID, Store_ID, Transaction_Date) VALUES ( 70, 26, 5, '2024-10-04');
 INSERT INTO Instore ( Order_ID, Staff_ID, Store_ID, Transaction_Date) VALUES ( 16, 33, 6, '2024-10-12');
 
+--select * from Instore order by Order_ID
 
 --11.Creating And Inserting data in Online table
 CREATE TABLE Online 
