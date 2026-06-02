@@ -1,0 +1,17 @@
+torch
+transformers
+datasets
+accelerate
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+nltk
+contractions
+pyspellchecker
+lightgbm
+openpyxl
+scipy
+joblib
+
