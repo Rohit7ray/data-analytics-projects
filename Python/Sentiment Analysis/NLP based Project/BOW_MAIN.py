@@ -74,79 +74,84 @@ text[:5]
 
 ## ----------- PRE PROCESSING -----------
 
-#creating an emplty list to store preprocessed text
-text1 = []
+class Text_Preprocessor:
+    def __init__(self):
+        self.stop_words = set(stopwords.words('english'))
+        self.lemmatizer = WordNetLemmatizer()
+        self.spell = SpellChecker()
 
-def get_wordnet_pos(word):
-    #Map POS tag to first character lemmatize() accepts
-    tag = nltk.pos_tag([word])[0][1][0].upper()
-    tag_dict = {
+    def get_wordnet_pos(self, word):
+        #Map POS tag to first character lemmatize() accepts
+        tag = nltk.pos_tag([word])[0][1][0].upper()
+        tag_dict = {
         "J": wordnet.ADJ,
         "N": wordnet.NOUN,
         "V": wordnet.VERB,
         "R": wordnet.ADV
-    }
-    return tag_dict.get( tag, wordnet.NOUN) #.get(key, default_value)
+        }
+        return tag_dict.get(tag, wordnet.NOUN) #.get(key, default_value)
+        
 
+    def preprocess(self, reviews):
 
-    #Counter to Display only the first 3 records
-    display_count = 0
+        processed_reviews = []
 
-    #Process all records
-    for review in text:
-        if display_count<3: #Display intermediate result
-            print(f"Original: {review}")
-        expanded_review = fix(review) #the fix() function automatically expands contractions into their full forms.
-        if display_count < 3:
-            print(f"After expanding contractions: {expanded_review}")
+        for review in reviews:
 
+            review = contractions.fix(review)
 
-        # Remove punctuation
-        no_punctuation = expanded_review.translate(str.maketrans('', '', string.punctuation))
-        if display_count < 3:
-            print(f"After removing punctuation: {no_punctuation}")
+            review = review.translate(
+                str.maketrans('', '', string.punctuation) #str.maketrans(Characters you want to 
+                #replace, Characters that will replace them, Characters you want to delete)
+            )
 
-        # Remove digits/numbers
-        no_digits = no_punctuation.translate(str.maketrans('', '', string.digits))
-        if display_count < 3:
-            print(f"After removing digits: {no_digits}")
+            review = review.translate(
+                str.maketrans('', '', string.digits)
+            )
 
-        # Convert to lowercase
-        processed_review = no_digits.lower()
-        if display_count < 3:
-            print(f"After converting to lowercase: {processed_review}")
+            review = review.lower()
 
-        # Remove stopwords
-        no_stopwords = ' '.join(word for word in processed_review.split() if word not in stop_words)
-        if display_count < 3:
-            print(f"After removing stopwords: {no_stopwords}")
+            review = ' '.join(
+                word for word in review.split()
+                if word not in self.stop_words
+            )
 
+            review = ' '.join(
+                self.lemmatizer.lemmatize(
+                    word,
+                    self.get_wordnet_pos(word)
+                )
+                for word in review.split()
+            )
 
-        # # Handling lemmatizer
-        lemmatized_words = ' '.join(lemmatizer.lemmatize(w, get_wordnet_pos(w)) for w in no_stopwords.split())
-        if display_count < 3:
-            print(f"After Handling lemmatizer: {lemmatized_words}")
+            processed_reviews.append(review)
 
-        # # After stemming
-        stemmer = PorterStemmer()
-        stemmed_review = ' '.join(stemmer.stem(word) for word in lemmatized_words.split())
-        if display_count < 3:
-          print(f"After stemming: {stemmed_review}")
+        return processed_reviews
+    
+preprocessor = Text_Preprocessor()
+text1 = preprocessor.preprocess(text)
+print(text1[:3])
 
-        # After spell correction
-        spell = SpellChecker()
-        corrected_review = ' '.join(spell.correction(word) if spell.correction(word) else word for word in lemmatized_words.split())
-        if display_count < 3:
-            print(f"After spell correction: {corrected_review}")
-            print("-" * 50)  # Separator for readability
+print(amazon)
 
-        # Add to the final list
-        text1.append(corrected_review)
+label = amazon['Label']
+reviews = list(zip(text1, label))
+reviews = pd.DataFrame (reviews, columns = ['amazon', 'label'])
+reviews
+reviews.head()
 
-        # Increment display counter
-        display_count += 1
+reviews = reviews.sample(frac=1, random_state=1).reset_index()
+reviews.head()
 
-# Print the final processed text for verification
-print("Final Processed Text:")
-print(text1[:3])  # Show only the first 3 processed examples if needed
+## ------------ Split the Dataset ------------
 
+#train dataset by splitting the data
+train_reviews = reviews.amazon[:800]
+train_sentiments = reviews.label[:800]
+
+#test dataset
+test_reviews = reviews.amazon[800:]
+test_sentiments = reviews.label[800:]
+
+print(train_reviews.shape,train_sentiments.shape)
+print(test_reviews.shape,test_sentiments.shape)
