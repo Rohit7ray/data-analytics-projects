@@ -1,96 +1,72 @@
-# Data Handling
-import numpy as np
+# ==========================================
+# Imports
+# ==========================================
 import pandas as pd
-
-# Text Processing
-import re
 import string
 import contractions
-from spellchecker import SpellChecker
-
-# NLTK
 import nltk
-from nltk.tokenize import word_tokenize
+
 from nltk.corpus import stopwords, wordnet
-from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.stem import WordNetLemmatizer
 
-
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
-nltk.download('averaged_perceptron_tagger')
-
-# Feature Engineering
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
 
-# Train Test Split
-from sklearn.model_selection import train_test_split
-
-# Models
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import BaggingClassifier
-from sklearn.ensemble import HistGradientBoostingClassifier
-from lightgbm import LGBMClassifier
 
-# Evaluation
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
     recall_score,
     f1_score,
     confusion_matrix,
-    classification_report,
-    roc_curve,
-    roc_auc_score
+    classification_report
 )
 
-# Cross Validation
-from sklearn.model_selection import KFold, cross_val_score
+# ==========================================
+# Download NLTK Resources
+# ==========================================
+nltk.download("stopwords")
+nltk.download("wordnet")
+nltk.download("averaged_perceptron_tagger")
 
-# Visualization
-import matplotlib.pyplot as plt
-import seaborn as sns
+# ==========================================
+# Load Dataset
+# ==========================================
+amazon = pd.read_csv(
+    "amazon_cells_labelled.txt",
+    sep="\t",
+    header=None,
+    names=["Text", "Label"]
+)
 
-# Warnings
-import warnings
-warnings.filterwarnings("ignore")
-
-
-
-
-## ---------- Loading File ----------
-amazon = pd.read_csv('amazon_cells_labelled.txt',delimiter = '\t', header = None, names = ['Text','Label'])
 print(amazon.head())
 
-## Checking the data type
-amazon.dtypes
+# ==========================================
+# Text Preprocessing
+# ==========================================
+class TextPreprocessor:
 
-## Reviewing the text
-text = amazon['Text']
-text[:5]
-
-## ----------- PRE PROCESSING -----------
-
-class Text_Preprocessor:
     def __init__(self):
-        self.stop_words = set(stopwords.words('english'))
+        self.stop_words = set(stopwords.words("english"))
         self.lemmatizer = WordNetLemmatizer()
-        self.spell = SpellChecker()
 
     def get_wordnet_pos(self, word):
-        #Map POS tag to first character lemmatize() accepts
+
         tag = nltk.pos_tag([word])[0][1][0].upper()
+
         tag_dict = {
-        "J": wordnet.ADJ,
-        "N": wordnet.NOUN,
-        "V": wordnet.VERB,
-        "R": wordnet.ADV
+            "J": wordnet.ADJ,
+            "N": wordnet.NOUN,
+            "V": wordnet.VERB,
+            "R": wordnet.ADV
         }
-        return tag_dict.get(tag, wordnet.NOUN) #.get(key, default_value)
-        
+
+        return tag_dict.get(tag, wordnet.NOUN)
 
     def preprocess(self, reviews):
 
@@ -101,22 +77,22 @@ class Text_Preprocessor:
             review = contractions.fix(review)
 
             review = review.translate(
-                str.maketrans('', '', string.punctuation) #str.maketrans(Characters you want to 
-                #replace, Characters that will replace them, Characters you want to delete)
+                str.maketrans("", "", string.punctuation)
             )
 
             review = review.translate(
-                str.maketrans('', '', string.digits)
+                str.maketrans("", "", string.digits)
             )
 
             review = review.lower()
 
-            review = ' '.join(
-                word for word in review.split()
+            review = " ".join(
+                word
+                for word in review.split()
                 if word not in self.stop_words
             )
 
-            review = ' '.join(
+            review = " ".join(
                 self.lemmatizer.lemmatize(
                     word,
                     self.get_wordnet_pos(word)
@@ -127,31 +103,147 @@ class Text_Preprocessor:
             processed_reviews.append(review)
 
         return processed_reviews
-    
-preprocessor = Text_Preprocessor()
-text1 = preprocessor.preprocess(text)
-print(text1[:3])
 
-print(amazon)
 
-label = amazon['Label']
-reviews = list(zip(text1, label))
-reviews = pd.DataFrame (reviews, columns = ['amazon', 'label'])
-reviews
-reviews.head()
+preprocessor = TextPreprocessor()
 
-reviews = reviews.sample(frac=1, random_state=1).reset_index()
-reviews.head()
+amazon["Processed_Text"] = preprocessor.preprocess(
+    amazon["Text"]
+)
 
-## ------------ Split the Dataset ------------
+# ==========================================
+# Train Test Split
+# ==========================================
+X_train, X_test, y_train, y_test = train_test_split(
+    amazon["Processed_Text"],
+    amazon["Label"],
+    test_size=0.2,
+    random_state=42,
+    stratify=amazon["Label"] #It preserves the same class distribution in train and test datasets.
+)
 
-#train dataset by splitting the data
-train_reviews = reviews.amazon[:800]
-train_sentiments = reviews.label[:800]
+# ==========================================
+# Bag of Words
+# ==========================================
+vectorizer = CountVectorizer()
 
-#test dataset
-test_reviews = reviews.amazon[800:]
-test_sentiments = reviews.label[800:]
+X_train_bow = vectorizer.fit_transform(X_train)
 
-print(train_reviews.shape,train_sentiments.shape)
-print(test_reviews.shape,test_sentiments.shape)
+X_test_bow = vectorizer.transform(X_test)
+
+print("Train Shape:", X_train_bow.shape)
+print("Test Shape :", X_test_bow.shape)
+
+# ==========================================
+# Models
+# ==========================================
+models = {
+    "Naive Bayes": MultinomialNB(),
+
+    "Decision Tree": DecisionTreeClassifier(
+        criterion="entropy",
+        random_state=42
+    ),
+
+    "HistGradientBoosting":
+    HistGradientBoostingClassifier(
+        random_state=42
+    ),
+
+    "Bagging SVM":
+    BaggingClassifier(
+        estimator=SVC(probability=True),
+        n_estimators=20,
+        random_state=42
+    )
+}
+
+# ==========================================
+# Training & Evaluation
+# ==========================================
+results = []
+
+for name, model in models.items():
+
+    print("\n" + "="*50)
+    print(name)
+    print("="*50)
+
+    # HistGradientBoosting requires dense data
+    if name == "HistGradientBoosting":
+
+        model.fit(
+            X_train_bow.toarray(),
+            y_train
+        )
+
+        predictions = model.predict(
+            X_test_bow.toarray()
+        )
+
+        cv_score = cross_val_score(
+            model,
+            X_train_bow.toarray(),
+            y_train,
+            cv=5,
+            scoring="accuracy"
+        ).mean()
+
+    else:
+
+        model.fit(
+            X_train_bow,
+            y_train
+        )
+
+        predictions = model.predict(
+            X_test_bow
+        )
+
+        cv_score = cross_val_score(
+            model,
+            X_train_bow,
+            y_train,
+            cv=5,
+            scoring="accuracy"
+        ).mean()
+
+    accuracy = accuracy_score(y_test, predictions)
+    precision = precision_score(y_test, predictions)
+    recall = recall_score(y_test, predictions)
+    f1 = f1_score(y_test, predictions)
+
+    print("\nConfusion Matrix")
+    print(confusion_matrix(y_test, predictions))
+
+    print("\nClassification Report")
+    print(
+        classification_report(
+            y_test,
+            predictions,
+            target_names=[
+                "Negative",
+                "Positive"
+            ]
+        )
+    )
+
+    results.append({
+        "Model": name,
+        "CV Accuracy": round(cv_score, 4),
+        "Accuracy": round(accuracy, 4),
+        "Precision": round(precision, 4),
+        "Recall": round(recall, 4),
+        "F1 Score": round(f1, 4)
+    })
+
+# ==========================================
+# Results Table
+# ==========================================
+results_df = pd.DataFrame(results)
+
+print("\nModel Comparison")
+print(results_df.sort_values(
+    by="Accuracy",
+    ascending=False
+))
