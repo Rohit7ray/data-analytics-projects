@@ -14,7 +14,7 @@ from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split, cross_val_score
 
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.ensemble import BaggingClassifier
@@ -144,6 +144,7 @@ print("Test Shape :", X_test_bow.shape)
 # ==========================================
 # Models
 # ==========================================
+# Models
 models = {
 
     "Decision Tree":
@@ -151,6 +152,9 @@ models = {
         criterion="entropy",
         random_state=42
     ),
+
+    "Gaussian Naive Bayes":
+    GaussianNB(),
 
     "HistGradientBoosting":
     HistGradientBoostingClassifier(
@@ -181,7 +185,7 @@ fig, axes = plt.subplots(
 for i, (name, model) in enumerate(models.items()):
 
     # HistGradientBoosting requires dense matrix
-    if name == "HistGradientBoosting":
+    if name in ["HistGradientBoosting", "Gaussian Naive Bayes"]:
 
         model.fit(
             X_train_bow.toarray(),
@@ -314,7 +318,7 @@ results_df = pd.DataFrame(
 
 # Save CSV
 results_df.to_csv(
-    "reports/model_results.csv",
+    "reports/model_comparision_results.csv",
     index=False
 )
 

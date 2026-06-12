@@ -1,4 +1,0 @@
-Model,CV Accuracy,Accuracy,Precision,Recall,F1 Score
-Decision Tree,0.7688,0.79,0.79,0.79,0.79
-Bagging SVM,0.7838,0.76,0.7826,0.72,0.75
-HistGradientBoosting,0.68,0.625,0.6866,0.46,0.5509

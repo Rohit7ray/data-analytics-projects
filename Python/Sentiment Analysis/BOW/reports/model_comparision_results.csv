@@ -1,5 +1,5 @@
 Model,CV Accuracy,Accuracy,Precision,Recall,F1 Score
-Naive Bayes,0.79,0.78,0.7593,0.82,0.7885
 Decision Tree,0.7688,0.79,0.79,0.79,0.79
-HistGradientBoosting,0.68,0.625,0.6866,0.46,0.5509
 Bagging SVM,0.7838,0.76,0.7826,0.72,0.75
+Gaussian Naive Bayes,0.7213,0.715,0.6693,0.85,0.7489
+HistGradientBoosting,0.68,0.625,0.6866,0.46,0.5509
