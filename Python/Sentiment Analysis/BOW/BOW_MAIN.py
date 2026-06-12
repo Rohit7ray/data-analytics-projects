@@ -1,22 +1,24 @@
 # ==========================================
 # Imports
 # ==========================================
-import pandas as pd
+import os
 import string
 import contractions
+import pandas as pd
 import nltk
+import matplotlib.pyplot as plt
 
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer
 
-from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split, cross_val_score
 
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import HistGradientBoostingClassifier
-from sklearn.svm import SVC
 from sklearn.ensemble import BaggingClassifier
+from sklearn.svm import SVC
 
 from sklearn.metrics import (
     accuracy_score,
@@ -24,7 +26,9 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     confusion_matrix,
-    classification_report
+    classification_report,
+    roc_curve,
+    roc_auc_score
 )
 
 # ==========================================
@@ -35,6 +39,11 @@ nltk.download("wordnet")
 nltk.download("averaged_perceptron_tagger")
 
 # ==========================================
+# Create Reports Folder
+# ==========================================
+os.makedirs("reports", exist_ok=True)
+
+# ==========================================
 # Load Dataset
 # ==========================================
 amazon = pd.read_csv(
@@ -43,8 +52,6 @@ amazon = pd.read_csv(
     header=None,
     names=["Text", "Label"]
 )
-
-print(amazon.head())
 
 # ==========================================
 # Text Preprocessing
@@ -117,9 +124,9 @@ amazon["Processed_Text"] = preprocessor.preprocess(
 X_train, X_test, y_train, y_test = train_test_split(
     amazon["Processed_Text"],
     amazon["Label"],
-    test_size=0.2,
+    test_size=0.20,
     random_state=42,
-    stratify=amazon["Label"] #It preserves the same class distribution in train and test datasets.
+    stratify=amazon["Label"]
 )
 
 # ==========================================
@@ -138,9 +145,9 @@ print("Test Shape :", X_test_bow.shape)
 # Models
 # ==========================================
 models = {
-    "Naive Bayes": MultinomialNB(),
 
-    "Decision Tree": DecisionTreeClassifier(
+    "Decision Tree":
+    DecisionTreeClassifier(
         criterion="entropy",
         random_state=42
     ),
@@ -152,7 +159,9 @@ models = {
 
     "Bagging SVM":
     BaggingClassifier(
-        estimator=SVC(probability=True),
+        estimator=SVC(
+            probability=True
+        ),
         n_estimators=20,
         random_state=42
     )
@@ -163,13 +172,15 @@ models = {
 # ==========================================
 results = []
 
-for name, model in models.items():
+fig, axes = plt.subplots(
+    len(models),
+    1,
+    figsize=(8, 20)
+)
 
-    print("\n" + "="*50)
-    print(name)
-    print("="*50)
+for i, (name, model) in enumerate(models.items()):
 
-    # HistGradientBoosting requires dense data
+    # HistGradientBoosting requires dense matrix
     if name == "HistGradientBoosting":
 
         model.fit(
@@ -188,6 +199,8 @@ for name, model in models.items():
             cv=5,
             scoring="accuracy"
         ).mean()
+
+        prob_input = X_test_bow.toarray()
 
     else:
 
@@ -208,27 +221,66 @@ for name, model in models.items():
             scoring="accuracy"
         ).mean()
 
-    accuracy = accuracy_score(y_test, predictions)
-    precision = precision_score(y_test, predictions)
-    recall = recall_score(y_test, predictions)
-    f1 = f1_score(y_test, predictions)
+        prob_input = X_test_bow
 
-    print("\nConfusion Matrix")
-    print(confusion_matrix(y_test, predictions))
-
-    print("\nClassification Report")
-    print(
-        classification_report(
-            y_test,
-            predictions,
-            target_names=[
-                "Negative",
-                "Positive"
-            ]
-        )
+    accuracy = accuracy_score(
+        y_test,
+        predictions
     )
 
+    precision = precision_score(
+        y_test,
+        predictions
+    )
+
+    recall = recall_score(
+        y_test,
+        predictions
+    )
+
+    f1 = f1_score(
+        y_test,
+        predictions
+    )
+
+    cm = confusion_matrix(
+        y_test,
+        predictions
+    )
+
+    report = classification_report(
+        y_test,
+        predictions,
+        target_names=[
+            "Negative",
+            "Positive"
+        ]
+    )
+
+    # Save individual report
+    with open(
+        f"reports/{name.replace(' ','_')}_report.txt",
+        "w"
+    ) as f:
+
+        f.write("Confusion Matrix\n")
+        f.write(str(cm))
+        f.write("\n\nClassification Report\n")
+        f.write(report)
+
+    # ROC Curve
+    if hasattr(model, "predict_proba"):
+
+        probs = model.predict_proba(prob_input)[:,1]
+        fpr, tpr, _ = roc_curve(y_test, probs)
+        auc_score = roc_auc_score(y_test, probs)
+        axes[i].plot(fpr, tpr, label=f"AUC = {auc_score:.3f}")
+        axes[i].plot([0, 1], [0, 1], linestyle="--")
+        axes[i].set_title(f"ROC Curve - {name}")
+        axes[i].legend()
+
     results.append({
+
         "Model": name,
         "CV Accuracy": round(cv_score, 4),
         "Accuracy": round(accuracy, 4),
@@ -238,12 +290,32 @@ for name, model in models.items():
     })
 
 # ==========================================
-# Results Table
+# Save ROC Curves
 # ==========================================
-results_df = pd.DataFrame(results)
+plt.tight_layout()
 
-print("\nModel Comparison")
-print(results_df.sort_values(
+plt.savefig(
+    "reports/roc_curves.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.show()
+
+# ==========================================
+# Save Results
+# ==========================================
+results_df = pd.DataFrame(
+    results
+).sort_values(
     by="Accuracy",
     ascending=False
-))
+)
+
+# Save CSV
+results_df.to_csv(
+    "reports/model_results.csv",
+    index=False
+)
+
+print("\nResults saved successfully.")
