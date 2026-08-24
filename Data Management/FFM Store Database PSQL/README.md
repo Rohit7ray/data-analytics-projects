@@ -107,6 +107,8 @@ Retail Store Management/
 │
 ├── SQL script.sql
 │
+├── ERD.png
+│
 └── README.md
 ```
 
