@@ -59,13 +59,6 @@ Results are available in:
 * NLTK
 * Scikit-Learn
 
-## How to Run
-
-```bash
-pip install -r requirements.txt
-python BOW_MAIN.py
-```
-
 ## Project Structure
 
 ```text
