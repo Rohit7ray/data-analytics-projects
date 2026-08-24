@@ -74,20 +74,3 @@ The Python section contains projects covering **data analysis, machine learning,
 ### Databases & Data Platforms
 
 * SQL Server
-
-## What This Repository Demonstrates
-
-Through these projects, I focus on:
-
-* Turning raw data into meaningful insights
-* Writing efficient and structured SQL queries
-* Performing exploratory and statistical analysis
-* Building machine learning and deep learning solutions
-* Working with text, speech, and other unstructured data
-* Creating data-driven visualizations and reports
-* Solving practical business and analytical problems
-
-## Projects
-
-More projects and detailed documentation will be added as the repository evolves.
-
