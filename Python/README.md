@@ -76,6 +76,9 @@ The projects explore different techniques for processing and understanding human
 * Hugging Face
 * Transformers
 * Sentence Transformers
+* BOW
+* TFIDF
+* Ro-Bert
 
 ---
 
