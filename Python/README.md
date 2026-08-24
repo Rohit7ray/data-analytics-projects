@@ -126,28 +126,3 @@ Across these projects, I work with:
 * XLS-R
 
 ---
-
-##  Project Documentation
-
-Each project will contain its own README with:
-
-```text
-Problem Statement
-        ↓
-Dataset
-        ↓
-Data Preprocessing
-        ↓
-Exploratory Analysis
-        ↓
-Feature Engineering
-        ↓
-Model / Approach
-        ↓
-Evaluation
-        ↓
-Results
-        ↓
-Key Learnings
-```
-
