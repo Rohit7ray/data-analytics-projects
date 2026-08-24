@@ -13,9 +13,12 @@ Data-Analytics/
 │   └── SQL Projects
 │
 └── Python/
-    ├── Census/
-    ├── SER/
-    └── NLP/
+│    ├── Census/
+│    ├── SER/
+│    └── NLP/
+└── README.md
+   
+
 ```
 
 ## Data Management
