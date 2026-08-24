@@ -151,6 +151,3 @@ Results
 Key Learnings
 ```
 
-I will continue adding project-specific documentation and implementations as the projects evolve.
-
----
